@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // User Profile Validation
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['displayName', 'ageGroup', 'streak', 'totalMicroWins', 'lastActive'])
+        && data.keys().size() >= 5 && data.keys().size() <= 8
+        && data.displayName is string && data.displayName.size() <= 100
+        && (data.ageGroup == null || data.ageGroup in ['tweens', 'gen-z', 'young-adults'])
+        && data.streak is number && data.streak >= 0
+        && data.totalMicroWins is number && data.totalMicroWins >= 0
+        && (data.lastActive == request.time || data.lastActive == null)
+        && (!('email' in data) || (data.email is string && data.email.size() <= 200))
+        && (!('isAdmin' in data) || data.isAdmin is bool)
+        && (!('isLifetimeUser' in data) || data.isLifetimeUser is bool);
+    }
+
+    // Episode Progress Validation
+    function isValidEpisodeProgress(data) {
+      return data.keys().hasAll(['status', 'choiceSelected', 'completedMicroWins', 'updatedAt'])
+        && data.status in ['not-started', 'in-progress', 'completed']
+        && (data.choiceSelected == null || (data.choiceSelected is string && data.choiceSelected.size() <= 64))
+        && data.completedMicroWins is list
+        && data.completedMicroWins.size() <= 50
+        && (!('journalEntry' in data) || data.journalEntry == null || (data.journalEntry is string && data.journalEntry.size() <= 10000))
+        && (data.updatedAt == request.time || data.updatedAt == null);
+    }
+
+    // Match Rules
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(incoming());
+      allow update: if isOwner(userId) 
+        && (
+          // Action: Update Stats/Profile
+          (incoming().diff(existing()).affectedKeys().hasOnly(['streak', 'totalMicroWins', 'lastActive', 'ageGroup', 'email', 'isAdmin', 'isLifetimeUser']))
+          || (incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'lastActive', 'email', 'isAdmin', 'isLifetimeUser']))
+        )
+        && incoming().lastActive == request.time;
+
+      match /progress/{episodeId} {
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(episodeId) && isValidEpisodeProgress(incoming());
+        allow update: if isOwner(userId) 
+          && isValidEpisodeProgress(incoming())
+          && (
+            // Action: Select Choice
+            (incoming().diff(existing()).affectedKeys().hasOnly(['choiceSelected', 'status', 'updatedAt']))
+            || (incoming().diff(existing()).affectedKeys().hasOnly(['completedMicroWins', 'status', 'updatedAt']))
+            || (incoming().diff(existing()).affectedKeys().hasOnly(['journalEntry', 'updatedAt']))
+          );
+      }
+    }
+    
+    // Allow checking connection (from the testConnection call)
+    match /test/connection {
+      allow get: if true;
+    }
+  }
+}

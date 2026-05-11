@@ -1,0 +1,89 @@
+import React from 'react';
+import { ArrowLeft, BookOpen } from 'lucide-react';
+
+interface Props {
+  onBack: () => void;
+  isTween?: boolean;
+  isAdulting?: boolean;
+}
+
+export const CoachingPolicy: React.FC<Props> = ({ onBack, isTween, isAdulting }) => {
+  const isLightMode = isTween || isAdulting;
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-12">
+      <button 
+        onClick={onBack}
+        className={`flex items-center gap-2 font-black uppercase tracking-widest text-[10px] opacity-50 hover:opacity-100 transition-opacity ${isLightMode ? 'text-slate-900' : 'text-white'}`}
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Hub
+      </button>
+
+      <section className="space-y-6">
+        <div className="flex items-center gap-4 mb-2">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isAdulting ? 'bg-amber-100' : 'bg-amber-500/10'}`}>
+            <BookOpen className={`${isAdulting ? 'text-amber-600' : 'text-amber-400'} w-6 h-6`} />
+          </div>
+          <h1 className={`text-4xl font-black tracking-tighter uppercase ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Coaching Policy</h1>
+        </div>
+        <p className={`text-lg opacity-60 ${isLightMode ? 'text-slate-600' : 'text-white'}`}>Last Updated: May 8, 2026</p>
+      </section>
+
+      <div className={`max-w-none space-y-8 text-lg leading-relaxed ${isLightMode ? 'text-slate-700' : 'text-slate-300'} opacity-80`}>
+        <div className="p-8 rounded-[32px] bg-amber-500/10 border border-amber-500/20 mb-12">
+          <h3 className="text-xl font-bold text-amber-500 mb-4 uppercase tracking-tight text-amber-600">Disclaimer: Not a Substitute for Therapy</h3>
+          <p className="text-sm font-medium leading-relaxed">
+            The Resilience Lab is an educational tool designed to provide general strategies for digital wellbeing and social resilience. It is NOT a substitute for professional mental health counseling, psychiatric evaluation, or medical intervention.
+          </p>
+        </div>
+
+        <section className="space-y-4">
+          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>1. Nature of the Coaching</h2>
+          <p>
+            The "coaching" provided by this App is automated and based on general behavioral frameworks. It does not account for your specific clinical history, traumatic experiences, or chemical imbalances. 
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>2. Ethical Boundaries</h2>
+          <p>
+            This app does not diagnose conditions or prescribe treatments. If you are experiencing thoughts of self-harm, severe clinical depression, or acute anxiety, you MUST contact a licensed professional or an emergency crisis line in your region immediately.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>3. Moral Accountability</h2>
+          <p>
+            By using this App, you acknowledge that its creators have no moral or legal accountability for your emotional state or any negative experiences that might arise from engaging with its content. You recognize that the App is meant only to provide "scenarios" for personal reflection.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>4. Success of Outcome</h2>
+          <p>
+            We make no promises regarding the effectiveness of the "Micro-wins" or "Resilience Gains." Individual results vary significantly based on user effort, environment, and pre-existing mental health conditions.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>5. Usage Limit</h2>
+          <p>
+            Discontinue use if the content causes you distress, increases your anxiety, or interferes with your daily life.
+          </p>
+        </section>
+      </div>
+
+      <div className={`pt-12 border-t ${isLightMode ? 'border-amber-100' : 'border-white/5'}`}>
+        <button 
+          onClick={onBack}
+          className={`px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${
+            isTween ? 'bg-amber-500 text-white' : isAdulting ? 'bg-amber-600 text-white' : 'bg-amber-400 text-black hover:bg-amber-300'
+          }`}
+        >
+          Confirm Acknowledgment
+        </button>
+      </div>
+    </div>
+  );
+};

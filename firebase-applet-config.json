@@ -1,0 +1,92 @@
+import React from 'react';
+import { ArrowLeft, Shield } from 'lucide-react';
+
+interface Props {
+  onBack: () => void;
+  isTween?: boolean;
+  isAdulting?: boolean;
+}
+
+export const Terms: React.FC<Props> = ({ onBack, isTween, isAdulting }) => {
+  const isLightMode = isTween || isAdulting;
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-12">
+      <button 
+        onClick={onBack}
+        className={`flex items-center gap-2 font-black uppercase tracking-widest text-[10px] opacity-50 hover:opacity-100 transition-opacity ${isLightMode ? 'text-slate-900' : 'text-white'}`}
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Hub
+      </button>
+
+      <section className="space-y-6">
+        <div className="flex items-center gap-4 mb-2">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isAdulting ? 'bg-purple-500/10' : 'bg-indigo-500/10'}`}>
+            <Shield className={`${isAdulting ? 'text-purple-600' : 'text-indigo-400'} w-6 h-6`} />
+          </div>
+          <h1 className={`text-4xl font-black tracking-tighter uppercase ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Terms of Service</h1>
+        </div>
+        <p className={`text-lg opacity-60 ${isLightMode ? 'text-slate-600' : 'text-white'}`}>Last Updated: May 8, 2026</p>
+      </section>
+
+      <div className={`max-w-none space-y-8 text-lg leading-relaxed ${isLightMode ? 'text-slate-700' : 'text-slate-300'} opacity-80`}>
+        <div className="p-6 rounded-3xl bg-red-500/10 border border-red-500/20 mb-8">
+          <p className="font-bold text-red-500 uppercase tracking-widest text-xs mb-2 text-red-600">Important Notice</p>
+          <p className="text-sm font-medium">
+            BY USING THE RESILIENCE LAB, YOU AGREE TO THESE TERMS. IF YOU DO NOT AGREE, PLEASE DISCONTINUE USE IMMEDIATELY. THIS APP IS FOR EDUCATIONAL PURPOSES AND DOES NOT PROVIDE PROFESSIONAL ADVICE.
+          </p>
+        </div>
+
+        <section className="space-y-4">
+          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>1. Acceptance of Terms</h2>
+          <p>
+            The Resilience Lab (the "App") is a digital coaching platform. By accessing or using the App, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>2. No Liability & Hold Harmless</h2>
+          <p>
+            TO THE FULLEST EXTENT PERMITTED BY LAW, THE RESILIENCE LAB AND ITS CREATORS SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING OUT OF YOUR ACCESS TO, OR USE OF, THE APP.
+          </p>
+          <p>
+            You agree to defend, indemnify, and hold harmless the App's developers, affiliates, and representatives from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees arising out of or relating to your violation of these Terms or your use of the App, including, but not limited to, any psychological distress, social repercussions, or life outcomes.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>3. "As-Is" Service</h2>
+          <p>
+            The App is provided on an "as-is" and "as-available" basis without any warranties of any kind, either express or implied. We do not guarantee that the coaching strategies provided will work for your specific life situation or result in any specific outcome.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>4. User Responsibility</h2>
+          <p>
+            Users are solely responsible for their own actions and decisions made while or after using the App. The Resilience Lab provides scenarios for reflection, but the choices made in the real world are yours alone. We are not responsible for any negative social or personal experiences that may occur.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>5. Termination</h2>
+          <p>
+            We reserve the right to terminate or suspend your access to the App at any time, without notice, for any reason whatsoever.
+          </p>
+        </section>
+      </div>
+
+      <div className={`pt-12 border-t ${isLightMode ? 'border-slate-100' : 'border-white/5'}`}>
+        <button 
+          onClick={onBack}
+          className={`px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${
+            isTween ? 'bg-emerald-500 text-white' : isAdulting ? 'bg-purple-600 text-white' : 'bg-white text-black hover:bg-slate-200'
+          }`}
+        >
+          I Understand, Return to App
+        </button>
+      </div>
+    </div>
+  );
+};

@@ -1,0 +1,182 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect } from 'react';
+import { AppProvider, useApp } from './context/AppContext';
+import { Layout } from './components/Layout';
+import { JourneyMap } from './components/JourneyMap';
+import { EpisodeOverlay } from './components/EpisodeOverlay';
+import { Auth, Setup } from './components/Auth';
+import { Episode, EPISODES } from './data/episodes';
+import { AnimatePresence } from 'motion/react';
+import { Terms } from './components/legal/Terms';
+import { Privacy } from './components/legal/Privacy';
+import { CoachingPolicy } from './components/legal/CoachingPolicy';
+import { Paywall } from './components/legal/Paywall';
+
+type View = 'main' | 'privacy' | 'terms' | 'coaching' | 'paywall';
+
+function AppContent() {
+  const { user, profile, loading, isLifetimeUser, signIn } = useApp();
+  const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
+  const [currentView, setCurrentView] = useState<View>('main');
+
+  // Virtual Router / URL Params Check
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const page = params.get('page');
+    const mode = params.get('mode');
+    const userid = params.get('userid');
+
+    if (page === 'privacy') {
+      setCurrentView('privacy');
+    } else if (mode === 'upgrade') {
+      setCurrentView('paywall');
+    }
+  }, []); // Only run on mount
+
+  // Handle History Sync
+  useEffect(() => {
+    // Initial state
+    if (!window.history.state) {
+      window.history.replaceState({ type: 'main' }, '');
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+      if (!state) return;
+
+      if (state.type === 'main') {
+        setCurrentView('main');
+        setSelectedEpisode(null);
+      } else if (state.type === 'view') {
+        setCurrentView(state.view);
+        setSelectedEpisode(null);
+      } else if (state.type === 'episode') {
+        const ep = EPISODES.find(e => e.id === state.id);
+        if (ep) {
+          setSelectedEpisode(ep);
+          setCurrentView('main');
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateToView = (view: View) => {
+    setCurrentView(view);
+    setSelectedEpisode(null);
+    window.history.pushState({ type: 'view', view }, "");
+  };
+
+  const openEpisode = (ep: Episode | null) => {
+    if (!ep) {
+      setSelectedEpisode(null);
+      if (window.history.state?.type !== 'main') {
+        window.history.back();
+      }
+      return;
+    }
+
+    const index = EPISODES.findIndex(e => e.id === ep.id);
+    if (index > 4 && !isLifetimeUser) {
+      navigateToView('paywall');
+      return;
+    }
+
+    setSelectedEpisode(ep);
+    window.history.pushState({ type: 'episode', id: ep.id }, "");
+  };
+
+  const closeLegal = () => {
+    setCurrentView('main');
+    if (window.history.state?.type !== 'main') {
+      window.history.back();
+    }
+  };
+
+  const renderLegal = () => {
+    const isTween = profile?.ageGroup === 'tweens';
+    const isAdulting = profile?.ageGroup === 'young-adults';
+    
+    switch (currentView) {
+      case 'terms': return <Terms onBack={closeLegal} isTween={isTween} isAdulting={isAdulting} />;
+      case 'privacy': return <Privacy onBack={closeLegal} isTween={isTween} isAdulting={isAdulting} />;
+      case 'coaching': return <CoachingPolicy onBack={closeLegal} isTween={isTween} isAdulting={isAdulting} />;
+      case 'paywall': return <Paywall onBack={closeLegal} isTween={isTween} isAdulting={isAdulting} />;
+      default: return null;
+    }
+  };
+
+  // Virtual Router Bypass for specific pages (e.g. Privacy) even when loading/not logged in
+  if (currentView === 'privacy') {
+    return (
+      <Layout setView={navigateToView}>
+        {renderLegal()}
+      </Layout>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050510] flex items-center justify-center">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-teal-400 rounded-full animate-spin" />
+          <div className="absolute inset-0 blur-xl bg-teal-400/20 rounded-full animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentView !== 'main') {
+    return (
+      <Layout setView={navigateToView}>
+        {renderLegal()}
+      </Layout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Layout setView={navigateToView}>
+        <Auth />
+      </Layout>
+    );
+  }
+
+  // If user is logged in but hasn't picked an age group
+  if (!profile?.ageGroup) {
+    return (
+      <Layout setView={navigateToView}>
+        <Setup />
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout setView={navigateToView}>
+      <JourneyMap onSelect={openEpisode} />
+      
+      <AnimatePresence>
+        {selectedEpisode && (
+          <EpisodeOverlay 
+            episode={selectedEpisode} 
+            onClose={() => openEpisode(null)} 
+          />
+        )}
+      </AnimatePresence>
+    </Layout>
+  );
+}
+
+export default function App() {
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
+  );
+}
